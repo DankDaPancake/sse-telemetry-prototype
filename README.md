@@ -1,5 +1,11 @@
 # 🚀 Dự Án Monolith SSE Thời Gian Thực (NestJS + Vue 3)
 
+## 📚 Tài Liệu Tham Khảo
+
+Chúng tôi có đính kèm tài liệu chi tiết về công nghệ Server-Sent Events (SSE) được sử dụng trong dự án này:
+
+* **[📖 Đọc tài liệu giới thiệu về SSE](./docs/sse-intro.html)** *(Hãy tải file về hoặc mở trực tiếp bằng trình duyệt để xem nội dung)*
+
 ## 📋 Tổng Quan Kiến Trúc
 
 Chúng ta sử dụng cấu trúc **Monolith** để đơn giản hóa quá trình phát triển.
