@@ -1,98 +1,166 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 Dự Án Monolith SSE Thời Gian Thực (NestJS + Vue 3)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 📋 Tổng Quan Kiến Trúc
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Chúng ta sử dụng cấu trúc **Monolith** để đơn giản hóa quá trình phát triển.
+* **Backend:** NestJS (Cổng `3000`)
+* **Frontend:** Vue 3 + Vite (Cổng `5173`)
+* **Giao thức giao tiếp:**
+    * **Client -> Server:** Request HTTP chuẩn phương thức `POST` (Ví dụ: "Vào phòng", "Di chuyển").
+    * **Server -> Client:** Luồng **SSE Stream** một chiều (Server chủ động đẩy cập nhật `GameState` xuống).
 
-## Description
+```mermaid
+sequenceDiagram
+    participant Client A
+    participant Server
+    participant Client B
+    
+    Client A->>Server: POST /api/move (Hành động)
+    Server->>Server: Cập nhật State trong RAM
+    Server--)Client A: SSE Push (State mới)
+    Server--)Client B: SSE Push (State mới)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## 🛠️ Cấu Trúc Dự Án
 
-# watch mode
-$ npm run start:dev
+Chúng ta coi frontend như một "dự án con" nằm bên trong backend.
 
-# production mode
-$ npm run start:prod
+```text
+/
+├── src/                  # Code Backend NestJS
+│   ├── app.controller.ts # Xử lý routes HTTP & luồng SSE
+│   └── app.service.ts    # Logic Game & Quản lý State
+├── client/               # Code Frontend Vue 3
+│   ├── src/              # Các Component Vue
+│   └── vite.config.ts    # Đã cấu hình proxy /api -> localhost:3000
+└── package.json          # Dependencies của Backend
+
 ```
 
-## Run tests
+---
+
+## ⚙️ Cài Đặt & Thiết Lập
+
+Vì dự án có **hai** file `package.json` (một cho backend, một cho frontend), bạn cần cài đặt thư viện cho cả hai nơi.
+
+### 1. Cài đặt Backend
+
+Chạy lệnh này tại thư mục gốc (root):
 
 ```bash
-# unit tests
-$ npm run test
+npm install
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
 ```
 
-## Deployment
+### 2. Cài đặt Frontend
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Di chuyển vào thư mục client và cài đặt:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cd client
+npm install
+cd ..
+
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 🏃‍♂️ Cách Chạy (Môi Trường Dev)
 
-Check out a few resources that may come in handy when working with NestJS:
+Bạn cần mở **hai cửa sổ terminal** để chạy ứng dụng trong lúc phát triển.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+**Terminal 1: Backend (NestJS)**
+Khởi động server API tại `http://localhost:3000`.
 
-## Support
+```bash
+npm run start:dev
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```
 
-## Stay in touch
+**Terminal 2: Frontend (Vue)**
+Khởi động Vite dev server tại `http://localhost:5173`.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+cd client
+npm run dev
 
-## License
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+> **Lưu ý về Proxy:**
+> Bạn **không** cần cấu hình CORS thủ công. Frontend Vue đã được cấu hình để tự động proxy (chuyển tiếp) tất cả các request bắt đầu bằng `/api` sang backend.
+> * Request Frontend gọi: `fetch('/api/join')`
+> * Điểm đến thực tế: `http://localhost:3000/api/join`
+> 
+> 
+
+---
+
+## 🚢 Cách Chạy (Môi Trường Production/Build)
+
+Để giả lập môi trường production (hoặc chạy tất cả trên một cổng duy nhất):
+
+1. **Build Frontend:**
+```bash
+cd client
+npm run build
+
+```
+
+
+*(Lệnh này tạo ra các file HTML/JS tĩnh trong thư mục `client/dist`)*
+2. **Chạy Backend:**
+```bash
+cd ..
+npm run start:dev
+
+```
+
+
+3. **Truy cập ứng dụng:**
+Vào `http://localhost:3000`. NestJS sẽ phục vụ ứng dụng Vue dưới dạng file tĩnh.
+
+---
+
+## 🧩 Các Tính Năng Chính Đã Triển Khai
+
+### 1. Server-Sent Events (SSE)
+
+Nằm trong `app.controller.ts`. Chúng ta dùng decorator `@Sse` để tạo một luồng kết nối liên tục.
+
+```typescript
+@Sse('events')
+events(): Observable<MessageEvent> {
+  return this.appService.getGameStream();
+}
+
+```
+
+### 2. Quản Lý State (RxJS)
+
+Nằm trong `app.service.ts`. Chúng ta sử dụng `BehaviorSubject` để lưu trữ "Nguồn dữ liệu gốc" (Source of Truth) cho trạng thái game. Bất cứ khi nào state thay đổi, server sẽ đẩy object mới xuống tất cả client ngay lập tức.
+
+### 3. Cấu Hình TypeScript
+
+* **Backend:** Cấu hình chuẩn của NestJS.
+* **Frontend:** Bao gồm file shim `client/src/env.d.ts` để đảm bảo TypeScript hiểu được các file `.vue`.
+
+---
+
+## ❗ Khắc Phục Sự Cố (Troubleshooting)
+
+**Q: Tôi gặp lỗi `Cannot find module './App.vue'`.**
+A: Hãy chắc chắn file `client/src/env.d.ts` đã tồn tại và chứa khai báo module chính xác. Sau đó khởi động lại Vite server.
+
+**Q: Trạng thái game không cập nhật.**
+A: Kiểm tra tab Console của trình duyệt.
+
+* Nếu thấy lỗi `404` tại `/api/events`: Kiểm tra xem Backend có đang chạy không.
+* Nếu thấy lỗi `CORS`: Đảm bảo bạn đang truy cập qua `localhost:5173` (Vue) và Proxy trong `vite.config.ts` đang hoạt động.
+
+**Q: Tại sao lại có hai file package.json?**
+A: Để tách biệt các thư viện của Backend (Node/Nest) và Frontend (Vue/Vite). Việc này giúp tránh xung đột phiên bản và tối ưu hóa dung lượng build.
+
+```
